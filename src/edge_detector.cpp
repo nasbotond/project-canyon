@@ -21,7 +21,7 @@ void EdgeDetector::getEdges()
 
             prewittEdgeDetector(image, output);            
 
-            // cv::imwrite(outputName, output);
+            cv::imwrite(outputName, output);
 
             cv::namedWindow("Naive", cv::WINDOW_AUTOSIZE);
             cv::imshow("Naive", output);
@@ -57,10 +57,7 @@ void EdgeDetector::prewittEdgeDetector(cv::Mat& image, cv::Mat& output)
             out[i][j] = (int)sqrt(pow(magnitudeX, 2) + pow(magnitudeY, 2));            
         }
     }
-    output = cv::Mat(image.rows, image.cols, CV_8U, &out);
 
-    // cv::imshow("Naive", output);
-    // cv::waitKey(0);
-
-    // return cv::Mat(image.rows, image.cols, CV_8UC1, &out);
+    // output = cv::Mat(image.rows, image.cols, CV_8U, &out); // shallow copy
+    cv::Mat(image.rows, image.cols, CV_8U, &out).copyTo(output); // deep copy
 }
