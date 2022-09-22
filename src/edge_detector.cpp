@@ -61,15 +61,15 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
     {
         for(int j = halfKernelSize; j < image.cols - halfKernelSize; ++j) // horizontal axis (columns)
         {
-            int magnitudeX = 0;
-            int magnitudeY = 0;
+            double magnitudeX = 0;
+            double magnitudeY = 0;
 
             for(int u = -halfKernelSize; u <= halfKernelSize; ++u)
             {
                 for(int v = -halfKernelSize; v <= halfKernelSize; ++v)
                 {
-                    magnitudeX += v*(int)image.at<uchar>(i+u,j+v);
-                    magnitudeY += u*(int)image.at<uchar>(i+u,j+v);
+                    magnitudeX += (double)v*image.at<uchar>(i+u,j+v);
+                    magnitudeY += (double)u*image.at<uchar>(i+u,j+v);
                 }
             }
             magnitudes.at(i*image.cols + j) = (int)sqrt(pow(magnitudeX, 2) + pow(magnitudeY, 2));
