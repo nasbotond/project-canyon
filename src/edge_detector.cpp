@@ -50,9 +50,9 @@ void EdgeDetector::getEdges()
 
 void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPrewitt, cv::Mat& outputPrewittNMS)
 {
-    uint8_t magnitudes[image.rows][image.cols];
-    uint8_t magnitudesAfterNMS[image.rows][image.cols];
-    double gradientDirections[image.rows][image.cols];
+    std::vector<uint8_t> magnitudes(image.rows*image.cols);
+    std::vector<uint8_t> magnitudesAfterNMS(image.rows*image.cols);
+    std::vector<double> gradientDirections(image.rows*image.cols);
 
     int kernelSize = 3;
     int halfKernelSize = kernelSize / 2;
@@ -72,12 +72,12 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
                     magnitudeY += u*(int)image.at<uchar>(i+u,j+v);
                 }
             }
-            magnitudes[i][j] = (int)sqrt(pow(magnitudeX, 2) + pow(magnitudeY, 2));
-            gradientDirections[i][j] = atan(magnitudeX/magnitudeY);
+            magnitudes.at(i*image.cols + j) = (int)sqrt(pow(magnitudeX, 2) + pow(magnitudeY, 2));
+            gradientDirections.at(i*image.cols+j) = atan(magnitudeX/magnitudeY);
         }
     }
 
-    cv::Mat(image.rows, image.cols, CV_8U, &magnitudes).copyTo(outputPrewitt); // deep copy
+    cv::Mat(image.rows, image.cols, CV_8U, magnitudes.data()).copyTo(outputPrewitt); // deep copy
 
     // Algoritmus: Non-maxima suppression
     // 1 From each position (x,y), step in the two directions perpendicular to edge orientation Θ(x,y)
@@ -88,22 +88,22 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
     {
         for(int j = halfKernelSize; j < image.cols - halfKernelSize; ++j) // horizontal axis (columns)
         {
-            double perpendicularDirection = gradientDirections[i][j] + (M_PI/2);
+            double perpendicularDirection = gradientDirections.at(i*image.cols+j) + (M_PI/2);
 
             if(perpendicularDirection < M_PI/6)
             {
-                magnitudesAfterNMS[i][j] = (magnitudes[i][j+1] > magnitudes[i][j]) || (magnitudes[i][j-1] > magnitudes[i][j]) ? 0 : magnitudes[i][j];
+                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at(i*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at(i*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
             else if(perpendicularDirection > M_PI/6)
             {
-                magnitudesAfterNMS[i][j] = (magnitudes[i+1][j] > magnitudes[i][j]) || (magnitudes[i-1][j] > magnitudes[i][j]) ? 0 : magnitudes[i][j];
+                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i+1)*image.cols+j) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i-1)*image.cols+j) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
             else
             {
-                magnitudesAfterNMS[i][j] = (magnitudes[i+1][j+1] > magnitudes[i][j]) || (magnitudes[i-1][j-1] > magnitudes[i][j]) ? 0 : magnitudes[i][j];
+                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i+1)*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i-1)*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
         }
     }
 
-    cv::Mat(image.rows, image.cols, CV_8U, &magnitudesAfterNMS).copyTo(outputPrewittNMS); // deep copy
+    cv::Mat(image.rows, image.cols, CV_8U, magnitudesAfterNMS.data()).copyTo(outputPrewittNMS); // deep copy
 }

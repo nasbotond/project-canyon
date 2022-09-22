@@ -4,6 +4,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef M_PI
+#define M_PI 3.1415926535897932384626
+#endif
+
 #include "opencv2/opencv.hpp"
 #include <opencv2/imgproc.hpp>
 #include <iostream>
@@ -15,6 +19,7 @@
 #include <numeric>
 #include <vector>
 #include <cmath>
+#include <stdint.h>
 namespace fs = std::filesystem;
 
 class EdgeDetector
