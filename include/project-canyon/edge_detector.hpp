@@ -20,17 +20,7 @@ namespace fs = std::filesystem;
 class EdgeDetector
 {
     private:
-
-        // std::string fileName; // csv file containing the data we want to work with (IMU data)
-        // inline static const std::string newVideoName = "../eltekor.avi"; // output video name and path
-        // std::vector<std::vector<std::string>> content;
-
-        // std::vector<std::vector<cv::Mat>> frames;
-
-        // std::vector<float> accX;
-        // std::vector<float> accY;
-        // std::vector<float> accZ;
-
+    
         std::string sPath;
         std::string outputFileName;
 
@@ -41,9 +31,5 @@ class EdgeDetector
 
         // Main functions
         void getEdges();
-        void prewittEdgeDetector(cv::Mat& image, cv::Mat& output);
-
-        // Helper functions
-        // std::vector<int> getCameraIDs();
-        // void showFrames() const;
+        void prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPrewitt, cv::Mat& outputPrewittNMS);
 };
