@@ -8,7 +8,7 @@ void EdgeDetector::getEdges()
 
         if(fileName.substr(fileName.size()-3).compare("png") == 0)
         {
-            std::string outputNamePrewitt = this->outputFileName + "_" + fileName.substr(0, fileName.size()-4) + "_Prewitt.jpg";
+            std::string outputNamePrewitt = this->outputFileName + "_" + fileName.substr(0, fileName.size()-4) + "gradientMagnitude.jpg";
             std::string outputNamePrewittNMS = this->outputFileName + "_" + fileName.substr(0, fileName.size()-4) + "_PrewittNMS.jpg";
             std::string outputNameCombined = this->outputFileName + "_" + fileName.substr(0, fileName.size()-4) + "_combined.jpg";
         
@@ -42,7 +42,7 @@ void EdgeDetector::getEdges()
             cv::imwrite(outputNameCombined, combinedImage);
 
             // Show combined image
-            cv::imshow("(1) Original : (2) Prewitt Edge Detection : (3) Prewitt Edge Detection with NMS", combinedImage);
+            cv::imshow("(1) Original : (2) Gradient Magnitude : (3) Prewitt Edge Detection with NMS", combinedImage);
             cv::waitKey(0);
         }        
     }
