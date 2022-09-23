@@ -11,6 +11,12 @@ This code takes a path to a directory and performs Prewitt edge detection (with 
 ## Usage
 - `./getEdges <path to directory containing the images> <output file prefix>`
 
+## Example Results
+
+![Motor](test_outputs/output_motor_combined.jpg)
+![Julia](test_outputs/output_julia_combined.jpg)
+![CirleGrey](test_outputs/output_circlegrey_combined.jpg)
+
 ## How to build
 ### Linux or MacOS
 - Build project
@@ -18,7 +24,7 @@ This code takes a path to a directory and performs Prewitt edge detection (with 
   - execute the following commands: `cmake ..` and `make`
 - Run executable
   - to run the executable, execute the following: `./getEdges <path to directory containing the images> <output file prefix>`
-    - ex. command: `./getEdges ../../1_prewitt test`
+    - ex. command: `./getEdges ../1_prewitt test`
     
 ### Windows
 - ***add the binary directory of OpenCV to System (or User) PATH variable***
@@ -33,4 +39,4 @@ This code takes a path to a directory and performs Prewitt edge detection (with 
 - Run executable
   - open Command Prompt (or PowerShell) and navigate to the project build folder, then: `cd Debug`
   - in Debug, run the following command: `getEdges.exe <path to directory containing the images> <output file prefix>`
-    - ex. command: `getEdges.exe ../../1_prewitt test`
+    - ex. command: `getEdges.exe ../1_prewitt test`
