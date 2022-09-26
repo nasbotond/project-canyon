@@ -77,7 +77,7 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
             magnitude = magnitude < 0 ? 0 : magnitude;
             magnitudes.at(i*image.cols + j) = magnitude;
 
-            gradientDirections.at(i*image.cols+j) = atan(magnitudeX/magnitudeY);
+            gradientDirections.at(i*image.cols+j) = magnitudeY != 0 ? atan(magnitudeX/magnitudeY) : atan(magnitudeX/(magnitudeY+0.00001));
         }
     }
 
@@ -88,7 +88,7 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
     // 2 Denote inital pixel (x,y) by C, the two neighbouring pixels in perpendicular directions by A and B
     // 3 If M(A) > M(C) or M(B) > M(C), discard pixel (x,y) by setting M(x, y) = 0
 
-    double angle = 22.5*(M_PI/180);
+    double angle = 22.5*(M_PI/180.0);
 
     for(int i = halfKernelSize; i < image.rows - halfKernelSize; ++i) // vertical axis (rows)
     {
@@ -96,17 +96,21 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
         {
             double perpendicularDirection = gradientDirections.at(i*image.cols+j) + (M_PI/2);
 
-            if(perpendicularDirection <= angle)
+            if(perpendicularDirection <= angle || perpendicularDirection >= (M_PI - angle))
             {
                 magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at(i*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at(i*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
-            else if(perpendicularDirection >= angle)
+            else if(perpendicularDirection >= (M_PI/2 - angle) && perpendicularDirection <= (M_PI/2 + angle))
             {
                 magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i+1)*image.cols+j) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i-1)*image.cols+j) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
-            else
+            else if(perpendicularDirection > angle && perpendicularDirection < (M_PI/2 - angle))
             {
                 magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i+1)*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i-1)*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
+            }
+            else
+            {
+                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i-1)*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i+1)*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
         }
     }
