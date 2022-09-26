@@ -68,21 +68,27 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
             {
                 for(int v = -halfKernelSize; v <= halfKernelSize; ++v)
                 {
-                    magnitudeX += (double)v*image.at<uchar>(i+u,j+v);
-                    magnitudeY += (double)u*image.at<uchar>(i+u,j+v);
+                    magnitudeX += (double)v*(double)image.at<uchar>(i+u,j+v);
+                    magnitudeY += (double)u*(double)image.at<uchar>(i+u,j+v);
                 }
             }
-            magnitudes.at(i*image.cols + j) = (int)sqrt(pow(magnitudeX, 2) + pow(magnitudeY, 2));
+            int magnitude = (int)sqrt(pow(magnitudeX, 2) + pow(magnitudeY, 2));
+            magnitude = magnitude > 255 ? 255 : magnitude;
+            magnitude = magnitude < 0 ? 0 : magnitude;
+            magnitudes.at(i*image.cols + j) = magnitude;
+
             gradientDirections.at(i*image.cols+j) = atan(magnitudeX/magnitudeY);
         }
     }
 
-    cv::Mat(image.rows, image.cols, CV_8U, magnitudes.data()).copyTo(outputPrewitt); // deep copy
+    cv::Mat(image.rows, image.cols, CV_8UC1, magnitudes.data()).copyTo(outputPrewitt); // deep copy
 
     // Algoritmus: Non-maxima suppression
     // 1 From each position (x,y), step in the two directions perpendicular to edge orientation Θ(x,y)
     // 2 Denote inital pixel (x,y) by C, the two neighbouring pixels in perpendicular directions by A and B
     // 3 If M(A) > M(C) or M(B) > M(C), discard pixel (x,y) by setting M(x, y) = 0
+
+    double angle = 22.5*(M_PI/180);
 
     for(int i = halfKernelSize; i < image.rows - halfKernelSize; ++i) // vertical axis (rows)
     {
@@ -90,11 +96,11 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
         {
             double perpendicularDirection = gradientDirections.at(i*image.cols+j) + (M_PI/2);
 
-            if(perpendicularDirection < M_PI/6)
+            if(perpendicularDirection <= angle)
             {
                 magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at(i*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at(i*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
-            else if(perpendicularDirection > M_PI/6)
+            else if(perpendicularDirection >= angle)
             {
                 magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i+1)*image.cols+j) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i-1)*image.cols+j) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
