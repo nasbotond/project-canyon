@@ -77,11 +77,11 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
             magnitude = magnitude < 0 ? 0 : magnitude;
             magnitudes.at(i*image.cols + j) = magnitude;
 
-            gradientDirections.at(i*image.cols+j) = magnitudeY != 0 ? atan(magnitudeX/magnitudeY) : atan(magnitudeX/(magnitudeY+0.00001));
+            gradientDirections.at(i*image.cols+j) = magnitudeY != 0 ? atan(magnitudeX/magnitudeY) : atan(magnitudeX/(magnitudeY+0.0000001));
         }
     }
 
-    cv::Mat(image.rows, image.cols, CV_8UC1, magnitudes.data()).copyTo(outputPrewitt); // deep copy
+    cv::Mat(image.rows, image.cols, CV_8U, magnitudes.data()).copyTo(outputPrewitt); // deep copy
 
     // Algoritmus: Non-maxima suppression
     // 1 From each position (x,y), step in the two directions perpendicular to edge orientation Θ(x,y)
@@ -94,23 +94,29 @@ void EdgeDetector::prewittEdgeDetectorWithNMS(cv::Mat& image, cv::Mat& outputPre
     {
         for(int j = halfKernelSize; j < image.cols - halfKernelSize; ++j) // horizontal axis (columns)
         {
-            double perpendicularDirection = gradientDirections.at(i*image.cols+j) + (M_PI/2);
+            double perpendicularDirection = gradientDirections.at(i*image.cols+j);
 
-            if(perpendicularDirection <= angle || perpendicularDirection >= (M_PI - angle))
+            if(abs(perpendicularDirection) <= angle)
             {
+                // horizontal
+                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i+1)*image.cols+j) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i-1)*image.cols+j) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
+                
+            }
+            else if(abs(perpendicularDirection) >= (M_PI/2 - angle) && abs(perpendicularDirection) <= (M_PI/2 + angle))
+            {
+                // vertical
                 magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at(i*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at(i*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
-            else if(perpendicularDirection >= (M_PI/2 - angle) && perpendicularDirection <= (M_PI/2 + angle))
+            else if(perpendicularDirection > -angle && perpendicularDirection < -(M_PI/2 - angle))
             {
-                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i+1)*image.cols+j) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i-1)*image.cols+j) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
-            }
-            else if(perpendicularDirection > angle && perpendicularDirection < (M_PI/2 - angle))
-            {
-                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i+1)*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i-1)*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
+                // negative diagonal
+                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i-1)*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i+1)*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
+                
             }
             else
             {
-                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i-1)*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i+1)*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
+                // positive diagonal
+                magnitudesAfterNMS.at(i*image.cols+j) = (magnitudes.at((i+1)*image.cols+j+1) > magnitudes.at(i*image.cols+j)) || (magnitudes.at((i-1)*image.cols+j-1) > magnitudes.at(i*image.cols+j)) ? 0 : magnitudes.at(i*image.cols+j);
             }
         }
     }
